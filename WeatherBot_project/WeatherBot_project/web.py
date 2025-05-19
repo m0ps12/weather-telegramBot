@@ -19,6 +19,20 @@ def load_stats():
     return {"start_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "requests": 0}
 
 
+@app.route('/stats')
+def stats():
+    db: Session = next(get_db())
+
+    cities_count = db.query(City).count()
+    users_count = db.query(User).count()
+
+    return render_template(
+        "status.html",
+        cities_count=cities_count,
+        users_count=users_count
+    )
+
+
 @app.route('/')
 def status():
     stats = load_stats()

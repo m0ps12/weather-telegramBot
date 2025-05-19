@@ -138,6 +138,34 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(response, reply_markup=get_main_keyboard(user_id))
 
 
+init_db()
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    db: Session = next(get_db())
+
+    user = db.query(User).filter_by(telegram_id=update.effective_user.id).first()
+
+    if not user:
+        new_user = User(
+            telegram_id=update.effective_user.id,
+            last_city=None
+        )
+        db.add(new_user)
+        db.commit()
+
+    await update.message.reply_text("Привет! Я погодный бот.")
+
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    db: Session = next(get_db())
+    user = db.query(User).filter_by(telegram_id=update.effective_user.id).first()
+
+    if update.message.text in CITIES:
+        user.last_city = update.message.text
+        db.commit()
+
+
 async def run_bot():
     application = Application.builder().token(TELEGRAM).build()
 
